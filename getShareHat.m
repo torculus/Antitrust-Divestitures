@@ -4,7 +4,7 @@ function [shr] = getShareHat(delta, sigma)
 J = 14;
 shr = zeros(J,1);
 
-Dgrt = zeros(3,1);
+Dgrt = zeros(4,1);
 Dgrt(1) = exp(delta(1)/(1-sigma))+exp(delta(2)/(1-sigma))+...
             exp(delta(3)/(1-sigma))+exp(delta(6)/(1-sigma))+...
             exp(delta(7)/(1-sigma))+exp(delta(14)/(1-sigma));
@@ -15,6 +15,8 @@ Dgrt(2) = exp(delta(4)/(1-sigma))+exp(delta(5)/(1-sigma))+...
         
 Dgrt(3) = exp(delta(8)/(1-sigma))+exp(delta(9)/(1-sigma))+...
             exp(delta(11)/(1-sigma));
+        
+Dgrt(4) = 1; % outside good delta_0rt = 0
 
 D = sum( Dgrt.^(1-sigma) );
 

@@ -261,31 +261,29 @@ for i=iter
     dea = dea(Xfc, Yfc, 'orient', 'io');
     Eu = mean(dea.eff);
     
-    if i==1
-        merge_prods=1:5;
-    elseif ismember(i,[10 13 14 15])
-        merge_prods=2:5;
-    elseif ismember(i,[20 23 24 25])
-        merge_prods=[1 3 4 5];
-    elseif ismember(i,[30 33 34 35])
-        merge_prods=[1 2 4 5];
-    elseif ismember(i,[123 124 125])
-        merge_prods=3:5;
-    elseif ismember(i,[130 133 134 135])
-        merge_prods=[2 4 5];
-    elseif ismember(i,[230 233 234 235])
-        merge_prods=[1 4 5];
-    end
-    
     % get new estimated marginal costs with efficiency gains
     % mc_hat^* = [change f1; change f2; same; same; same]
+    
+    233 234 235 10 20 30 130 230
+    if i==1
+        merge_prods=1:5;
+    elseif ismember(i,[13, 14, 15])
+        merge_prods=[];
+    elseif ismember(i,[23 24 25])
+        merge_prods=[];
+    elseif ismember(i,[33 34 35])
+        merge_prods=[];
+    elseif ismember(i,[123 124 125])
+        merge_prods=[];
+    elseif ismember(i,[133 134 135])
+        merge_prods=[];
+    elseif ismember(i,[23]
+    end
+    
     mc_hat(merge_prods) = mc_hat(merge_prods) - (1 - Eu).*R(1,1:7)*rho_hat;
     
     CFP_EFFIC = getPpost(mc_hat, Omega, params, xbpx);
     
     merger_pEffic = [merger_pEffic CFP_EFFIC];
-    
-    % calculate Consumer Surplus with efficiency gains
-    ConsSurp = 1/abs(alpha) * sum(exp(alpha*CFP_EFFIC + xbpx));
-    CS(i) = ConsSurp;
+    %ConsSurp = 1/abs(alpha) * sum(exp(alpha*p + xbpx));
 end

@@ -234,58 +234,97 @@ clear i temp;
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Divestitures %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % 13 = product 1 goes to firm 3, 235 = products {2,3} go to firm 5
-iter = [1 13 14 15 23 24 25 33 34 35 123 124 125 133 134 135 233 ...
-    234 235 10 20 30 130 230];
+iteration = [1 13 14 15 23 24 25 33 34 35 ... 123 124 125 133 134 135 233 234 235 
+     10 20 30 130 230]';
 
-CS = zeros(length(iter),1);
-merger_prices = []; % merger prices no efficiency gains
-merger_pEffic = []; % merger prices with efficiency gains
+li = length(iteration);
+
+merger_prices = zeros(J,li); % merger prices no efficiency gains
+merger_pEffic = zeros(J,li); % merger prices with efficiency gains
+mc_hat_effic = zeros(J,li); % store new mc with efficiencies
+
+fval = zeros(li,1); % hold the function values from each iteration
+flags = zeros(li,1); % hold the flags (1=converve,0=iteration limit)
+fval2 = zeros(li,1);
+flags2 = zeros(li,1);
 
 M = sum(markSize(merge_date));
+g_krt = R(1,1:7);
+CS = zeros(li,1);
 
-for i=iter
-    Omega = getOmega(i);
+tic
+for n=1:li
+    iter = iteration(n);
+    Omega = getOmega(iter);
     
-    %fun = @(p)p - mc_hat - ...
-    %    (Omega .* Dsdp') \ getShareHat(xbpx - alpha*p,sigma);
-    %
-    %p0 = 2.5 .*ones(J,1)+2.*(rand(J,1)-0.5);
-    %p_post = fminunc(fun, p0);
+    % set up optimization options
+    optopts = optimoptions(@fsolve,'MaxIter',1000,'MaxFunEvals',...
+        2000,'Disp','off','TolFun',1e-12);
     
-    CFP_NO_EFFIC = getPpost(mc_hat, Omega, params, xbpx);
-    merger_prices = [merger_prices CFP_NO_EFFIC];
+    % set up to solve for p: p = mc_hat + (Omega * Dsdp')\shr(p)
+    fun = @(p)getCFprices(p, mc_hat, Omega, xbpx, alpha, sigma);
+    
+    if iter == 123
+        % about 0-5
+        p0 = 10.*(rand(J,1)-0.5);
+    else
+        % about 1-4 in each element
+        p0 = 2.5 .*ones(J,1)+3.*(rand(J,1)-0.5);
+    end
+    
+    % get counterfactual prices
+    [CFP_NO_EFFIC,fvalout,flag] = fsolve(fun, p0, optopts);
+    fval(n,1) = mean(fvalout);
+    flags(n,1) = flag;
+    
+    merger_prices(:,n) = CFP_NO_EFFIC;
     
     %%%%%%%%%%%%%% DEA Efficiency Gains %%%%%%%%%%%%%%%%%%%%%       
     Yfc = M .* getSfc(iter,shr);
-    Xfc = kron(Y, rho_hat');
-    dea = dea(Xfc, Yfc, 'orient', 'io');
-    Eu = mean(dea.eff);
+    Xfc = kron(Yfc, rho_hat');
+    io = dea(Xfc, Yfc, 'orient', 'io');
     
-    if i==1
-        merge_prods=1:5;
-    elseif ismember(i,[10 13 14 15])
-        merge_prods=2:5;
-    elseif ismember(i,[20 23 24 25])
-        merge_prods=[1 3 4 5];
-    elseif ismember(i,[30 33 34 35])
-        merge_prods=[1 2 4 5];
-    elseif ismember(i,[123 124 125])
-        merge_prods=3:5;
-    elseif ismember(i,[130 133 134 135])
-        merge_prods=[2 4 5];
-    elseif ismember(i,[230 233 234 235])
-        merge_prods=[1 4 5];
+    if mod(iter, 10) == 0 % divesting to carve-out firm
+        Eu = mean(io.eff(4:5));
+    else
+        Eu = mean(io.eff(1:2));
+    end
+    
+    if iter==1
+        merge_prods=[1; 1; 1; 1; 1; zeros(9,1)];
+    elseif ismember(iter,[10 13 14 15])
+        merge_prods=[0; 1; 1; 1; 1; zeros(9,1)];
+    elseif ismember(iter,[20 23 24 25])
+        merge_prods=[1; 0; 1; 1; 1; zeros(9,1)];
+    elseif ismember(iter,[30 33 34 35])
+        merge_prods=[1; 1; 0; 1; 1; zeros(9,1)];
+    elseif ismember(iter,[123 124 125])
+        merge_prods=[0; 0; 1; 1; 1; zeros(9,1)];
+    elseif ismember(iter,[130 133 134 135])
+        merge_prods=[0; 1; 0; 1; 1; zeros(9,1)];
+    elseif ismember(iter,[230 233 234 235])
+        merge_prods=[1; 0; 0; 1; 1; zeros(9,1)];
     end
     
     % get new estimated marginal costs with efficiency gains
     % mc_hat^* = [change f1; change f2; same; same; same]
-    mc_hat(merge_prods) = mc_hat(merge_prods) - (1 - Eu).*R(1,1:7)*rho_hat;
+    mc_hat_new = mc_hat-(1 - Eu).*g_krt*rho_hat.*merge_prods;
+    mc_hat_effic(:,n) = mc_hat_new;
     
-    CFP_EFFIC = getPpost(mc_hat, Omega, params, xbpx);
+    fun1 = @(p)getCFprices(p, mc_hat_new, Omega, xbpx, alpha, sigma);
+    if Eu == 1
+        CFP_EFFIC = CFP_NO_EFFIC; % save some computational cycles
+    else
+        [CFP_EFFIC,fvalout,flag] = fsolve(fun1, p0, optopts);
+        fval2(n) = mean(fvalout);
+        flags2(n) = flag;
+    end
     
-    merger_pEffic = [merger_pEffic CFP_EFFIC];
+    merger_pEffic(:,n) = CFP_EFFIC;
     
     % calculate Consumer Surplus with efficiency gains
-    ConsSurp = 1/abs(alpha) * sum(exp(alpha*CFP_EFFIC + xbpx));
-    CS(i) = ConsSurp;
+    CS(n) = 1/abs(alpha) * sum(exp(alpha*CFP_EFFIC + xbpx));
 end
+toc
+
+clear J li M R XBPX

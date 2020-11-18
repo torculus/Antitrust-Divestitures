@@ -189,7 +189,7 @@ pval_2g = betainc(df./(df+(1.*t_stat.^2)),(df./2),(1./2));
 
 %%%%%%%%%%%%%%%%%%%%%% Supply Estimation %%%%%%%%%%%%%%%%%%%%%%%%%%%
 J = 14; % number of products
-alpha = beta_2sls(1);
+alpha = abs( beta_2sls(1) );
 sigma = abs( beta_2sls(end) );
 
 params = [alpha; sigma];
@@ -234,8 +234,8 @@ clear i temp;
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Divestitures %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % 13 = product 1 goes to firm 3, 235 = products {2,3} go to firm 5
-iteration = [1 13 14 15 23 24 25 33 34 35 ... 123 124 125 133 134 135 233 234 235 
-     10 20 30 130 230]';
+iteration = [1 13 14 15 23 24 25 33 34 35 ... 
+     123 124 125 133 134 135 233 234 235 10 20 30 130 230]';
 
 li = length(iteration);
 
@@ -243,14 +243,14 @@ merger_prices = zeros(J,li); % merger prices no efficiency gains
 merger_pEffic = zeros(J,li); % merger prices with efficiency gains
 mc_hat_effic = zeros(J,li); % store new mc with efficiencies
 
-fval = zeros(li,1); % hold the function values from each iteration
-flags = zeros(li,1); % hold the flags (1=converve,0=iteration limit)
-fval2 = zeros(li,1);
-flags2 = zeros(li,1);
+fval = zeros(li,2); % hold the function values from each iteration
+flags = zeros(li,2); % hold the flags (1=converge, 0=iteration limit)
 
 M = sum(markSize(merge_date));
 g_krt = R(1,1:7);
 CS = zeros(li,1);
+
+Eu_store = zeros(li,1);
 
 tic
 for n=1:li
@@ -258,18 +258,15 @@ for n=1:li
     Omega = getOmega(iter);
     
     % set up optimization options
-    optopts = optimoptions(@fsolve,'MaxIter',1000,'MaxFunEvals',...
-        2000,'Disp','off','TolFun',1e-12);
+    optopts = optimoptions(@fsolve,'MaxIter',1500,'MaxFunEvals',...
+        2500,'Disp','off','TolFun',1e-12);
     
     % set up to solve for p: p = mc_hat + (Omega * Dsdp')\shr(p)
     fun = @(p)getCFprices(p, mc_hat, Omega, xbpx, alpha, sigma);
+    p0 = 2.5 .*ones(J,1)+3.*(rand(J,1)-0.5); % about 1-4 in each element
     
     if iter == 123
-        % about 0-5
-        p0 = 10.*(rand(J,1)-0.5);
-    else
-        % about 1-4 in each element
-        p0 = 2.5 .*ones(J,1)+3.*(rand(J,1)-0.5);
+        p0 = mc_hat;       
     end
     
     % get counterfactual prices
@@ -289,6 +286,8 @@ for n=1:li
     else
         Eu = mean(io.eff(1:2));
     end
+    
+    Eu_store(n) = Eu;
     
     if iter==1
         merge_prods=[1; 1; 1; 1; 1; zeros(9,1)];
@@ -312,13 +311,10 @@ for n=1:li
     mc_hat_effic(:,n) = mc_hat_new;
     
     fun1 = @(p)getCFprices(p, mc_hat_new, Omega, xbpx, alpha, sigma);
-    if Eu == 1
-        CFP_EFFIC = CFP_NO_EFFIC; % save some computational cycles
-    else
-        [CFP_EFFIC,fvalout,flag] = fsolve(fun1, p0, optopts);
-        fval2(n) = mean(fvalout);
-        flags2(n) = flag;
-    end
+    
+    [CFP_EFFIC,fvalout,flag] = fsolve(fun1, p0, optopts);
+    fval(n,2) = mean(fvalout);
+    flags(n,2) = flag;
     
     merger_pEffic(:,n) = CFP_EFFIC;
     
@@ -326,5 +322,3 @@ for n=1:li
     CS(n) = 1/abs(alpha) * sum(exp(alpha*CFP_EFFIC + xbpx));
 end
 toc
-
-clear J li M R XBPX

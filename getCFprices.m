@@ -2,7 +2,7 @@ function [zero] = getCFprices(p, mc_hat, Omega, xbpx, alpha, sigma)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-shr = getShareHat(alpha*p + xbpx, sigma);
+shr = getShareHat(-alpha*p + xbpx, sigma);
 
 g1shr = shr(1)+shr(2)+shr(3)+shr(6)+shr(7)+shr(14);
 g2shr = shr(4)+shr(5)+shr(10)+shr(12)+shr(13);

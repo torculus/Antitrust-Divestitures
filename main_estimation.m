@@ -117,15 +117,15 @@ xi = delta_jrt - X*beta_2sls;
 W = ( (Z'*xi)*(xi'*Z) ) \ eye(size(Z,2));
 beta_2sls = (X'*Z * W * Z'*X)\(X'*Z * W * Z'*delta_jrt);
 
-% get summary statistics
-df = n - size(X,2);
-s_hat   = xi'*xi/df; % Asymptotic covariance
-var_hat = s_hat./(X'*Z * W * Z'*X); % Estimated covariance matrix
-stderr  = sqrt(diag(var_hat)); % Standard errors
-t_stat  = beta_2sls./stderr; % t-ratios
-
-% p-values
-pval_2s = betainc(df./(df+(1.*t_stat.^2)),(df./2),(1./2));
+% % get summary statistics
+% df = n - size(X,2);
+% s_hat   = xi'*xi/df; % Asymptotic covariance
+% var_hat = s_hat./(X'*Z * W * Z'*X); % Estimated covariance matrix
+% stderr  = sqrt(diag(var_hat)); % Standard errors
+% t_stat  = beta_2sls./stderr; % t-ratios
+% 
+% % p-values
+% pval_2s = betainc(df./(df+(1.*t_stat.^2)),(df./2),(1./2));
 
 %%%%%%%%%%%%%%%%%%%%%%% group-nest specification
 
@@ -177,15 +177,15 @@ xi = delta_jrt - X*beta_2G;
 W = ( (Z'*xi)*(xi'*Z) ) \ eye(size(Z,2));
 beta_2G = (X'*Z * W * Z'*X)\(X'*Z * W * Z'*delta_jrt);
 
-% get summary statistics
-df = n - size(X,2);
-s_hat   = xi'*xi/df; % Asymptotic covariance
-var_hat = s_hat./(X'*Z * W * Z'*X); % Estimated covariance matrix
-stderr  = sqrt(diag(var_hat)); % Standard errors
-t_stat  = beta_2sls./stderr; % t-ratios
-
-% p-values
-pval_2g = betainc(df./(df+(1.*t_stat.^2)),(df./2),(1./2));
+% % get summary statistics
+% df = n - size(X,2);
+% s_hat   = xi'*xi/df; % Asymptotic covariance
+% var_hat = s_hat./(X'*Z * W * Z'*X); % Estimated covariance matrix
+% stderr  = sqrt(diag(var_hat)); % Standard errors
+% t_stat  = beta_2sls./stderr; % t-ratios
+% 
+% % p-values
+% pval_2g = betainc(df./(df+(1.*t_stat.^2)),(df./2),(1./2));
 
 %%%%%%%%%%%%%%%%%%%%%% Supply Estimation %%%%%%%%%%%%%%%%%%%%%%%%%%%
 J = 14; % number of products
@@ -214,7 +214,7 @@ end
 
 Dsdp = getShrDeriv(alpha, sigma, shr, shrG);
 
-% pre-merger is = firm 1,2 merging and divesting 1,2
+% pre-merger is equivalent to firm 1,2 merging and divesting 1,2
 Omega0 = getOmega(120);
 
 % calculate pre-merger marginal costs
@@ -234,8 +234,8 @@ clear i temp;
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Divestitures %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % 13 = product 1 goes to firm 3, 235 = products {2,3} go to firm 5
-iteration = [1 13 14 15 23 24 25 33 34 35 ... 
-     123 124 125 133 134 135 233 234 235 10 20 30 130 230]';
+iteration = [1 13 14 15 23 24 25 33 34 35 123 124 125 133 134 135 ...
+    233 234 235 10 20 30 120 130 230]';
 
 li = length(iteration);
 
@@ -307,7 +307,7 @@ for n=1:li
     
     % get new estimated marginal costs with efficiency gains
     % mc_hat^* = [change f1; change f2; same; same; same]
-    mc_hat_new = mc_hat-(1 - Eu).*g_krt*rho_hat.*merge_prods;
+    mc_hat_new = mc_hat-(1-Eu).*g_krt*rho_hat.*merge_prods;
     mc_hat_effic(:,n) = mc_hat_new;
     
     fun1 = @(p)getCFprices(p, mc_hat_new, Omega, xbpx, alpha, sigma);

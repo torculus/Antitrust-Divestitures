@@ -1,6 +1,5 @@
 function [shr] = getShareHat(delta, sigma)
 %SHARE Calculates the estimated nested logit market shares for prods 1:J
-%   Detailed explanation goes here
 J = 14;
 shr = zeros(J,1);
 

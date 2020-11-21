@@ -1,9 +1,10 @@
 function sfc = getSfc(n, shr)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%getSfc Gets the share of each firm in each category
 
 if n==1 % (no divestiture)
-    sfc = [shr(1)+shr(2)+shr(3); % share of merged in All-fam
+    sfc = [0;0;0;
+           
+           shr(1)+shr(2)+shr(3); % share of merged in All-fam
            shr(4)+shr(5); % share of merged in Kids
            0; % share of merged in Adult
            
@@ -20,11 +21,13 @@ if n==1 % (no divestiture)
            shr(8)];
 
 elseif n == 13 % Post = 3, makes products 9,10,11
-    sfc = [shr(2)+shr(3);
+    sfc = [0;0;0;
+           
+           shr(2)+shr(3);
            shr(4)+shr(5);
            0;
            
-           shr(1);
+           shr(1); % 1 goes to 3
            shr(10);
            shr(9)+shr(11);
            
@@ -37,7 +40,9 @@ elseif n == 13 % Post = 3, makes products 9,10,11
            shr(8)];
 
 elseif n == 14 % Quaker = 4, makes products 12,13,14
-    sfc = [shr(2)+shr(3);
+    sfc = [0;0;0;
+           
+           shr(2)+shr(3);
            shr(4)+shr(5);
            0;
            
@@ -45,7 +50,7 @@ elseif n == 14 % Quaker = 4, makes products 12,13,14
            shr(10);
            shr(9)+shr(11);
            
-           shr(1)+shr(14);
+           shr(1)+shr(14); % 1 goes to 4
            shr(12)+shr(13);
            0;
            
@@ -54,7 +59,9 @@ elseif n == 14 % Quaker = 4, makes products 12,13,14
            shr(8)];
 
 elseif n == 15 % Private = 5, makes products 6,7,8
-    sfc = [shr(2)+shr(3);
+    sfc = [0;0;0;
+           
+           shr(2)+shr(3);
            shr(4)+shr(5);
            0;
            
@@ -66,16 +73,18 @@ elseif n == 15 % Private = 5, makes products 6,7,8
            shr(12)+shr(13);
            0;
            
-           shr(1)+shr(6)+shr(7);
+           shr(1)+shr(6)+shr(7); % 1 goes to 5
            0;
            shr(8)];
 
 elseif n == 23
-    sfc = [shr(1)+shr(3);
+    sfc = [0;0;0;
+           
+           shr(1)+shr(3);
            shr(4)+shr(5);
            0;
            
-           shr(2);
+           shr(2); % 2 goes to 3
            shr(10);
            shr(9)+shr(11);
            
@@ -88,7 +97,9 @@ elseif n == 23
            shr(8)];
 
 elseif n == 24
-    sfc = [shr(1)+shr(3);
+    sfc = [0;0;0;
+           
+           shr(1)+shr(3);
            shr(4)+shr(5);
            0;
            
@@ -96,7 +107,7 @@ elseif n == 24
            shr(10);
            shr(9)+shr(11);
            
-           shr(2)+shr(14);
+           shr(2)+shr(14); % 2 goes to 4
            shr(12)+shr(13);
            0;
            
@@ -105,7 +116,9 @@ elseif n == 24
            shr(8)];
 
 elseif n == 25
-    sfc = [shr(1)+shr(3);
+    sfc = [0;0;0;
+           
+           shr(1)+shr(3);
            shr(4)+shr(5);
            0;
            
@@ -117,16 +130,18 @@ elseif n == 25
            shr(12)+shr(13);
            0;
            
-           shr(2)+shr(6)+shr(7);
+           shr(2)+shr(6)+shr(7); % 2 goes to 5
            0;
            shr(8)];
 
 elseif n == 33
-    sfc = [shr(1)+shr(2);
+    sfc = [0;0;0;
+           
+           shr(1)+shr(2);
            shr(4)+shr(5);
            0;
            
-           shr(3);
+           shr(3); % 3 goes to 3
            shr(10);
            shr(9)+shr(11);
            
@@ -139,7 +154,9 @@ elseif n == 33
            shr(8)];
 
 elseif n == 34
-    sfc = [shr(1)+shr(2);
+    sfc = [0;0;0;
+           
+           shr(1)+shr(2);
            shr(4)+shr(5);
            0;
            
@@ -147,7 +164,7 @@ elseif n == 34
            shr(10);
            shr(9)+shr(11);
            
-           shr(3)+shr(14);
+           shr(3)+shr(14); % 3 goes to 4
            shr(12)+shr(13);
            0;
            
@@ -156,7 +173,9 @@ elseif n == 34
            shr(8)];
 
 elseif n == 35
-    sfc = [shr(1)+shr(2);
+    sfc = [0;0;0;
+           
+           shr(1)+shr(2);
            shr(4)+shr(5);
            0;
            
@@ -168,16 +187,18 @@ elseif n == 35
            shr(12)+shr(13);
            0;
            
-           shr(3)+shr(6)+shr(7);
+           shr(3)+shr(6)+shr(7); % 3 goes to 5
            0;
            shr(8)];
 
 elseif n == 123
-    sfc = [shr(3);
+    sfc = [0;0;0;
+           
+           shr(3);
            shr(4)+shr(5);
            0;
            
-           shr(1)+shr(2);
+           shr(1)+shr(2); % 1,2 goes to 3
            shr(10);
            shr(9)+shr(11);
            
@@ -190,7 +211,9 @@ elseif n == 123
            shr(8)];
 
 elseif n == 124
-    sfc = [shr(3);
+    sfc = [0;0;0;
+           
+           shr(3);
            shr(4)+shr(5);
            0;
            
@@ -198,7 +221,7 @@ elseif n == 124
            shr(10);
            shr(9)+shr(11);
            
-           shr(1)+shr(2)+shr(14);
+           shr(1)+shr(2)+shr(14); % 1,2 goes to 4
            shr(12)+shr(13);
            0;
            
@@ -207,7 +230,9 @@ elseif n == 124
            shr(8)];
 
 elseif n == 125
-    sfc = [shr(3);
+    sfc = [0;0;0;
+           
+           shr(3);
            shr(4)+shr(5);
            0;
            
@@ -219,16 +244,18 @@ elseif n == 125
            shr(12)+shr(13);
            0;
            
-           shr(1)+shr(2)+shr(6)+shr(7);
+           shr(1)+shr(2)+shr(6)+shr(7); % 1,2 goes to 5
            0;
            shr(8)];
 
 elseif n == 133
-    sfc = [shr(2);
+    sfc = [0;0;0;
+           
+           shr(2);
            shr(4)+shr(5);
            0;
            
-           shr(1)+shr(3);
+           shr(1)+shr(3); % 1,3 goes to 3
            shr(10);
            shr(9)+shr(11);
            
@@ -241,7 +268,9 @@ elseif n == 133
            shr(8)];
 
 elseif n == 134
-    sfc = [shr(2);
+    sfc = [0;0;0;
+           
+           shr(2);
            shr(4)+shr(5);
            0;
            
@@ -249,7 +278,7 @@ elseif n == 134
            shr(10);
            shr(9)+shr(11);
            
-           shr(1)+shr(3)+shr(14);
+           shr(1)+shr(3)+shr(14); % 1,3 goes to 4
            shr(12)+shr(13);
            0;
            
@@ -258,7 +287,9 @@ elseif n == 134
            shr(8)];
 
 elseif n == 135
-    sfc = [shr(2);
+    sfc = [0;0;0;
+           
+           shr(2);
            shr(4)+shr(5);
            0;
            
@@ -270,16 +301,18 @@ elseif n == 135
            shr(12)+shr(13);
            0;
            
-           shr(1)+shr(3)+shr(6)+shr(7);
+           shr(1)+shr(3)+shr(6)+shr(7); % 1,3 goes to 5
            0;
            shr(8)];
 
 elseif n == 233
-    sfc = [shr(1);
+    sfc = [0;0;0;
+           
+           shr(1);
            shr(4)+shr(5);
            0;
            
-           shr(2)+shr(3);
+           shr(2)+shr(3); % 2,3 goes to 3
            shr(10);
            shr(9)+shr(11);
            
@@ -292,7 +325,9 @@ elseif n == 233
            shr(8)];
 
 elseif n == 234
-    sfc = [shr(1);
+    sfc = [0;0;0;
+           
+           shr(1);
            shr(4)+shr(5);
            0;
            
@@ -300,7 +335,7 @@ elseif n == 234
            shr(10);
            shr(9)+shr(11);
            
-           shr(2)+shr(3)+shr(14);
+           shr(2)+shr(3)+shr(14); % 2,3 goes to 4
            shr(12)+shr(13);
            0;
            
@@ -309,7 +344,9 @@ elseif n == 234
            shr(8)];
 
 elseif n == 235
-    sfc = [shr(1);
+    sfc = [0;0;0;
+           
+           shr(1);
            shr(4)+shr(5);
            0;
            
@@ -321,12 +358,12 @@ elseif n == 235
            shr(12)+shr(13);
            0;
            
-           shr(2)+shr(3)+shr(6)+shr(7);
+           shr(2)+shr(3)+shr(6)+shr(7); % 2,3 goes to 5
            0;
            shr(8)];
 
 elseif n == 10
-    sfc = [shr(1); % firm 0
+    sfc = [shr(1); % firm 0 gets 1
            0;
            0;
            
@@ -347,7 +384,7 @@ elseif n == 10
            shr(8)];
 
 elseif n == 20
-    sfc = [shr(2); % firm 0
+    sfc = [shr(2); % firm 0 gets 2
            0;
            0;
            
@@ -368,7 +405,7 @@ elseif n == 20
            shr(8)];
 
 elseif n == 30
-    sfc = [shr(3); % firm 0
+    sfc = [shr(3); % firm 0 gets 3
            0;
            0;
            
@@ -389,7 +426,7 @@ elseif n == 30
            shr(8)];
 
 elseif n == 120 % same as pre-merger
-    sfc = [shr(1)+shr(2);
+    sfc = [shr(1)+shr(2); % firm 0 gets 1,2
            0;
            0;
            
@@ -410,7 +447,7 @@ elseif n == 120 % same as pre-merger
            shr(8)];
 
 elseif n == 130
-    sfc = [shr(1)+shr(3); % firm 0
+    sfc = [shr(1)+shr(3); % firm 0 gets 1,3
            0;
            0;
            
@@ -431,7 +468,7 @@ elseif n == 130
            shr(8)];
 
 elseif n == 230
-    sfc = [shr(2)+shr(3); % firm 0
+    sfc = [shr(2)+shr(3); % firm 0 gets 2,3
            0;
            0;
            

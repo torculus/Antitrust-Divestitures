@@ -1,6 +1,5 @@
 function Dsdp = getShrDeriv(alpha, sigma, shr, shrG)
-%UNTITLED2 Gets the derivative matrix (∂s/∂p)
-%   Detailed explanation goes here
+%getShrDeriv Gets the derivative matrix (∂s/∂p)
 
 J=14;
 % categories of each product. All-fam=1, Kids=2, Adults=3

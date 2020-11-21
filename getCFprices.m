@@ -1,6 +1,5 @@
 function [zero] = getCFprices(p, mc_hat, Omega, xbpx, alpha, sigma)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%getCFprices Gets the FOC for the counterfactual prices
 
 shr = getShareHat(-alpha*p + xbpx, sigma);
 
@@ -15,6 +14,6 @@ shrG = [shr(1)/g1shr; shr(2)/g1shr; shr(3)/g1shr; shr(4)/g2shr;
 
 Dsdp = getShrDeriv(alpha,sigma,shr,shrG);
 
-zero = p - mc_hat - (Omega .* Dsdp')\shr;
+zero = p - mc_hat + (Omega .* Dsdp')\shr;
 end
 

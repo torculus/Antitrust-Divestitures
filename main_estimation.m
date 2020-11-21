@@ -50,12 +50,11 @@ s_jrt = s_jrt ./days_in_mo;
 %end
 
 % time fixed effects
-timeFE = data(:,3:10); %isQ1 isQ2 isQ3 isQ4 is09 is10 is11 is12
-quartFE = data(:,4:6); %isQ2 isQ3 isQ4
-yearFE = data(:,8:10); %is10 is11 is12
+quartFE = data(:,4:6); %isQ2 isQ3 isQ4 (isQ1 omitted)
+yearFE = data(:,8:10); %is10 is11 is12 (is09 omitted)
 
 % State/regional fixed effects
-stateFE = data(:,13:15); %isKY isOH isTX
+stateFE = data(:,13:15); %isKY isOH isTX (isIN omitted)
 
 % product fixed effects
 prodFE = data(:,18:25); % dummies for products 1-8
@@ -64,7 +63,7 @@ prodFE = data(:,18:25); % dummies for products 1-8
 manFE = data(:,32:35); % GM, Kellogg, Post, Quaker, (Private omittted)
 
 % category fixed effects
-catFE = data(:,38:39); %isKids isAllfam
+catFE = data(:,38:39); %isKids isAllfam (isAdult omitted)
 
 % product display fixed effects
 isDisp = data(:,47); % part of in-store circular
@@ -89,7 +88,7 @@ W_krt = data(:,67:73); % sugar, paperboard, labor, corn, rice, wheat, oats
 
 % get eta_jrt
 temp = [W_krt prodFE manFE];
-gammaTemp = (temp'*temp)\temp'*p_jrt;
+gammaTemp = (temp'*temp)\temp'*p_jrt; % p_jrt = temp*gammaTemp + eta_jrt
 eta_jrt = p_jrt - temp*gammaTemp;
 clear temp gammaTemp;
 
@@ -188,6 +187,7 @@ beta_2G = (X'*Z * W * Z'*X)\(X'*Z * W * Z'*delta_jrt);
 % pval_2g = betainc(df./(df+(1.*t_stat.^2)),(df./2),(1./2));
 
 %%%%%%%%%%%%%%%%%%%%%% Supply Estimation %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 J = 14; % number of products
 alpha = abs( beta_2sls(1) );
 sigma = abs( beta_2sls(end) );
@@ -214,11 +214,14 @@ end
 
 Dsdp = getShrDeriv(alpha, sigma, shr, shrG);
 
+% get cross-price elasticity matrix
+elas = kron(1./shr, prc') .* Dsdp;
+
 % pre-merger is equivalent to firm 1,2 merging and divesting 1,2
 Omega0 = getOmega(120);
 
-% calculate pre-merger marginal costs
-mc_hat = prc - (Omega0 .* Dsdp') \ shr;
+% estimate pre-merger marginal costs
+mc_hat = prc + (Omega0 .* Dsdp') \ shr;
 
 % regress mc_hat = inputs'*\rho + Supply FE's + error
 temp = [W_krt manFE prodFE];
@@ -248,7 +251,7 @@ flags = zeros(li,2); % hold the flags (1=converge, 0=iteration limit)
 
 M = sum(markSize(merge_date));
 g_krt = R(1,1:7);
-CS = zeros(li,1);
+CS = zeros(li,2);
 
 Eu_store = zeros(li,1);
 
@@ -261,13 +264,9 @@ for n=1:li
     optopts = optimoptions(@fsolve,'MaxIter',1500,'MaxFunEvals',...
         2500,'Disp','off','TolFun',1e-12);
     
-    % set up to solve for p: p = mc_hat + (Omega * Dsdp')\shr(p)
+    % set up to solve for p: p = mc_hat - (Omega * Dsdp')\shr(p)
     fun = @(p)getCFprices(p, mc_hat, Omega, xbpx, alpha, sigma);
     p0 = 2.5 .*ones(J,1)+3.*(rand(J,1)-0.5); % about 1-4 in each element
-    
-    if iter == 123
-        p0 = mc_hat;       
-    end
     
     % get counterfactual prices
     [CFP_NO_EFFIC,fvalout,flag] = fsolve(fun, p0, optopts);
@@ -276,32 +275,40 @@ for n=1:li
     
     merger_prices(:,n) = CFP_NO_EFFIC;
     
-    %%%%%%%%%%%%%% DEA Efficiency Gains %%%%%%%%%%%%%%%%%%%%%       
+    % calculate Consumer Surplus without efficiency gains
+    CS(n,1) = 1/abs(alpha) * sum(exp(xbpx - alpha*CFP_NO_EFFIC));
+    
+    %%%%%%%%%%%%%% DEA Efficiency Gains %%%%%%%%%%%%%%%%%%%%%
+    % Note: requires DEAMATLAB toolbox to run
     Yfc = M .* getSfc(iter,shr);
     Xfc = kron(Yfc, rho_hat');
-    io = dea(Xfc, Yfc, 'orient', 'io');
     
-    if mod(iter, 10) == 0 % divesting to carve-out firm
-        Eu = mean(io.eff(4:5));
-    else
-        Eu = mean(io.eff(1:2));
-    end
+    % pool together all of the firm's inputs and outputs
+    Yf = [sum(Yfc(1:3)); sum(Yfc(4:6)); sum(Yfc(7:9)); ...
+            sum(Yfc(10:12)); sum(Yfc(13:15))];
+    Xf = [sum(Xfc(1:3,:)); sum(Xfc(4:6,:)); sum(Xfc(7:9,:)); ...
+            sum(Xfc(10:12,:)); sum(Xfc(13:15,:))];
+    io = dea(Xf, Yf, 'orient', 'io');
+    
+    % get the efficiency measure for the merging firms
+    Eu = io.eff(2);
+    %Eu = 0.95; % 5% marginal cost reduction
     
     Eu_store(n) = Eu;
     
     if iter==1
         merge_prods=[1; 1; 1; 1; 1; zeros(9,1)];
-    elseif ismember(iter,[10 13 14 15])
+    elseif ismember(iter,[10 13 14 15]) % divesting product 1
         merge_prods=[0; 1; 1; 1; 1; zeros(9,1)];
-    elseif ismember(iter,[20 23 24 25])
+    elseif ismember(iter,[20 23 24 25]) % divesting 2
         merge_prods=[1; 0; 1; 1; 1; zeros(9,1)];
-    elseif ismember(iter,[30 33 34 35])
+    elseif ismember(iter,[30 33 34 35]) % divesting 3
         merge_prods=[1; 1; 0; 1; 1; zeros(9,1)];
-    elseif ismember(iter,[123 124 125])
+    elseif ismember(iter,[120 123 124 125]) % divesting 1,2
         merge_prods=[0; 0; 1; 1; 1; zeros(9,1)];
-    elseif ismember(iter,[130 133 134 135])
+    elseif ismember(iter,[130 133 134 135]) % divesting 1,3
         merge_prods=[0; 1; 0; 1; 1; zeros(9,1)];
-    elseif ismember(iter,[230 233 234 235])
+    elseif ismember(iter,[230 233 234 235]) % divesting 2,3 
         merge_prods=[1; 0; 0; 1; 1; zeros(9,1)];
     end
     
@@ -319,6 +326,6 @@ for n=1:li
     merger_pEffic(:,n) = CFP_EFFIC;
     
     % calculate Consumer Surplus with efficiency gains
-    CS(n) = 1/abs(alpha) * sum(exp(alpha*CFP_EFFIC + xbpx));
+    CS(n,2) = 1/abs(alpha) * sum(exp(xbpx - alpha*CFP_EFFIC));
 end
 toc

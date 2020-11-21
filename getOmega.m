@@ -1,6 +1,5 @@
 function Omega = getOmega(n)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+%getOmega gets the ownership matrix for each iteration
 
 if n==1 % (no divestiture)
     Omega = [1,1,1,1,1,0,0,0,0,0,0,0,0,0;
